@@ -1,3 +1,4 @@
+from curses.ascii import HT
 import json
 from fastapi import FastAPI
 from starlette.config import Config
@@ -25,14 +26,17 @@ oauth.register(
 @app.get('/')
 async def home(request: Request):
     user = request.session.get('user')
-    if user is not None:
-        data = json.dumps(user)
-        html = (
-            f'<pre>{data}</pre>'
-            '<a href="/logout">logout</a>'
-        )
-        return HTMLResponse(html)
-    return HTMLResponse('<a href="/login">login</a>')
+    redi = request.session.get('caller')
+    if redi is None:
+        if user is not None:
+            data = json.dumps(user)
+            html = (
+                f'{data}'
+            )
+            return HTMLResponse(html)
+        return HTMLResponse('<a href="/login">login</a>')
+    request.session.pop('caller', None)
+    return RedirectResponse(url='/'+ redi)
 
 @app.get('/login', tags=['authentication'])  # Tag it as "authentication" for our docs
 async def login(request: Request):
@@ -49,6 +53,7 @@ async def auth(request: Request):
 @app.get('/logout', tags=['authentication'])  # Tag it as "authentication" for our docs
 async def logout(request: Request):
     request.session.pop('user', None)
+    request.session.pop('caller', None)
     return RedirectResponse(url='/')
 
 @app.get('/permissions', tags=['authorization'])
