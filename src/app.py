@@ -56,7 +56,7 @@ async def logout(request: Request):
     request.session.pop('caller', None)
     return RedirectResponse(url='/')
 
-@app.get('/permissions', tags=['authorization'])
+@app.get('/permissions', tags=['authorization']) # Tag it as "authorization" for our docs
 async def permissions(request: Request):
     user = request.session.get('user')
     if user is not None:
@@ -65,8 +65,8 @@ async def permissions(request: Request):
         request.session['caller'] = 'permissions'
         return RedirectResponse(url='/login')
 
-@app.get('/authorize')
-async def authorize(request: Request, tags=['authorization']):
+@app.get('/authorize', tags=['authorization']) # Tag it as "authorization" for our docs
+async def authorize(request: Request):
     user = request.session.get('user')
     if user is not None:
         return HTMLResponse('authorize_end_point')
@@ -74,8 +74,8 @@ async def authorize(request: Request, tags=['authorization']):
         request.session['caller'] = 'authorize'
         return RedirectResponse(url='/login')
 
-@app.get('/token')
-async def token(request: Request, tags=['authorization']):
+@app.get('/token', tags=['authorization']) # Tag it as "authorization" for our docs
+async def token(request: Request):
     user = request.session.get('user')
     if user is not None:
         return HTMLResponse('token_end_point')
