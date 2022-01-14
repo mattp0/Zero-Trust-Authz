@@ -1,12 +1,13 @@
-from curses.ascii import HT
 import json
+import secrets
+
 from fastapi import FastAPI
 from starlette.config import Config
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import HTMLResponse, RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
-import secrets
+
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=secrets.token_urlsafe(32))
