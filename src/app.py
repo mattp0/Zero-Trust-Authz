@@ -59,6 +59,16 @@ async def permissions(request: Request):
     else:
         request.session['caller'] = 'permissions'
         return RedirectResponse(url='/login')
+
+@app.get('/authorize')
+async def authorize(request: Request, tags=['authorization']):
+    user = request.session.get('user')
+    if user is not None:
+        return HTMLResponse('authorize_end_point')
+    else:
+        request.session['caller'] = 'authorize'
+        return RedirectResponse(url='/login')
+
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host='127.0.0.1', port=8000)
