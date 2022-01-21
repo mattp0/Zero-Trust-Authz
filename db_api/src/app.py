@@ -87,7 +87,3 @@ async def delete_user(user: UserModel = Body(...)):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"success": "true"})
     else:
         return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED, content={"error": "did not delete user"})  
-
-if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run("app:app", host='127.0.0.1', port=8000)
