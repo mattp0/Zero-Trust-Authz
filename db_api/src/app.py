@@ -69,6 +69,17 @@ async def list_users():
     users = await db["collection"].find().to_list(1000)
     return users
 
+@app.post('/delete', response_description="delete a user", response_model=UserModel)
+async def delete_user(user: UserModel = Body(...)):
+    current_user = await db["collection"].find_one({"uuid": user.uuid})
+    if current_user is not None:
+        res = await db["collection"].deleteOne({"uuid": user.uuid})
+    else:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": "user not found"})
+    if res.deletedCount >= 1:
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"success": "true"})
+    else:
+        return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED, content={"error": "did not delete user"})  
 
 if __name__ == '__main__':
     import uvicorn
