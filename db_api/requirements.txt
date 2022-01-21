@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+starlette
+authlib
+motor
+itsdangerous
+httpx
