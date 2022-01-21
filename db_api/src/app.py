@@ -57,12 +57,12 @@ class UpdateUserModel(BaseModel):
         }
 
 
-@app.post("/", response_description="Add new user", response_model=UserModel)
+@app.post("/create", response_description="Add new user", response_model=UserModel)
 async def create_user(user: UserModel = Body(...)):
     user = jsonable_encoder(user)
     new_user = await db["collection"].insert_one(user)
-    created_student = await db["collection"].find_one({"_uuid": new_user.inserted_id})
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_student)
+    created_user = await db["collection"].find_one({"uuid": new_user.inserted_id})
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_user)
 
 @app.get('/users', response_description="List all users", response_model=List[UserModel])
 async def list_users():
