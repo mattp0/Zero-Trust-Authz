@@ -67,7 +67,10 @@ async def create_user(user: UserModel = Body(...)):
 @app.get('/', response_description="List all users", response_model=List[UserModel])
 async def list_users():
     users = await db["collection"].find().to_list(1000)
-    return users
+@app.get('/user', response_description="Get a user", response_model=UserModel)
+async def list_users(user: UserModel = Body(...)):
+    user = await db["collection"].find_one({"uuid": user})
+    return JSONResponse(status_code=status.HTTP_200_OK, content=user)
 
 @app.post('/delete', response_description="delete a user", response_model=UserModel)
 async def delete_user(user: UserModel = Body(...)):
