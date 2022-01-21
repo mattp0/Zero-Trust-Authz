@@ -64,9 +64,11 @@ async def create_user(user: UserModel = Body(...)):
     created_student = await db["collection"].find_one({"_uuid": new_user.inserted_id})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_student)
 
-@app.get('/', response_description="List all users", response_model=List[UserModel])
+@app.get('/users', response_description="List all users", response_model=List[UserModel])
 async def list_users():
     users = await db["collection"].find().to_list(1000)
+    return JSONResponse(status_code=status.HTTP_200_OK, content=users)
+
 @app.get('/user', response_description="Get a user", response_model=UserModel)
 async def list_users(user: UserModel = Body(...)):
     user = await db["collection"].find_one({"uuid": user})
