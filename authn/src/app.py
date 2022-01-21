@@ -10,8 +10,8 @@ from starlette.responses import HTMLResponse, RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi.responses import JSONResponse
 
-from ..config import db_api_url
-from .helper import add_user
+from config import db_api_url
+from helper import add_user
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=secrets.token_urlsafe(32))
@@ -87,7 +87,3 @@ async def token(request: Request):
     else:
         request.session['caller'] = 'token'
         return RedirectResponse(url='/login')
-
-if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=8000)
