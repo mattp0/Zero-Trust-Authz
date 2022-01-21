@@ -72,8 +72,10 @@ async def list_users():
 @app.get('/user', response_description="Get a user", response_model=UserModel)
 async def list_users(user: UserModel = Body(...)):
     user = await db["collection"].find_one({"uuid": user})
+    if not user:
+        return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
     return JSONResponse(status_code=status.HTTP_200_OK, content=user)
-    
+
 @app.post('/delete', response_description="delete a user", response_model=UserModel)
 async def delete_user(user: UserModel = Body(...)):
     current_user = await db["collection"].find_one({"uuid": user.uuid})
