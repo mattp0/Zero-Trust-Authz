@@ -1,13 +1,17 @@
 import json
+from os import stat
 import secrets
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from starlette.config import Config
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.responses import HTMLResponse, RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
+from fastapi.responses import JSONResponse
 
+from ..config import db_api_url
+from .helper import add_user
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=secrets.token_urlsafe(32))
@@ -34,7 +38,7 @@ async def home(request: Request):
             html = (
                 f'{data}'
             )
-            return HTMLResponse(html)
+            return JSONResponse(status_code=status.HTTP_200_OK, content=html)
         return HTMLResponse('<a href="/login">login</a>')
     request.session.pop('caller', None)
     return RedirectResponse(url='/'+ redi)
