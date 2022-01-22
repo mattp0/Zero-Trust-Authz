@@ -15,7 +15,7 @@ services:
   authn:
     build:
       context: ./
-      dockerfile: ./authn/Dockerfile
+      dockerfile: ./authz/Dockerfile
     ports:
       - "0.0.0.0:8060:80"
     restart: unless-stopped
