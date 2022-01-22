@@ -7,12 +7,12 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: authn
+      MONGO_INITDB_DATABASE: authz
     ports:
       - "0.0.0.0:8081:27017"
     volumes:
       - ./data:/data/db
-  authn:
+  authz:
     build:
       context: ./
       dockerfile: ./authz/Dockerfile
