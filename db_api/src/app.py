@@ -11,52 +11,6 @@ app = FastAPI()
 client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://root:example@mongo:27017/?authSource=admin")
 db = client.authn
 
-class UserObject(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-    
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid Object")
-        return ObjectId(v)
-    
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
-
-class UserModel(BaseModel):
-    uuid: UserObject = Field(default_factory=UserObject, alias="_uuid")
-    name: str = Field(...)
-    permissions: List[str] = Field(...)
-
-    class Config:
-        json_encoders = {ObjectId: str}
-        schema_extra = {
-            "example": {
-                "uuid": "12312421212",
-                "name": "joe bob",
-                "permissions": ["web", "admin", "chat"],
-            }
-        }
-
-class UpdateUserModel(BaseModel):
-    uuid: Optional[str]
-    name: Optional[str]
-    permissions: Optional[List[str]]
-
-    class Config:
-        json_encoders = {ObjectId: str}
-        schema_extra = {
-            "example": {
-                "uuid": "12312421212",
-                "name": "joe bob",
-                "permissions": ["web", "admin", "chat"],
-            }
-        }
-
-
 @app.post("/create", response_description="Add new user", response_model=UserModel)
 async def create_user(user: UserModel = Body(...)):
     user = jsonable_encoder(user)
@@ -90,3 +44,15 @@ async def delete_user(user: UserModel = Body(...)):
         return JSONResponse(status_code=status.HTTP_200_OK, content={"success": "true"})
     else:
         return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED)  
+
+@app.put("/update/{id}", response_model= UserModel, response_description="update a users info")
+async def update_user(id: str, user : UpdateUserModel = Body(...)):
+    user = {key: value for key, value in user.dict().items() if value is not None}
+    if len(user) >= 1:
+        update_result = await db["collection"].update_one({"_id": id}, {"$set": user})
+        if update_result.modified_count == 1:
+            if (updated_user := await db["collection"].find_one({"_id": id})) is not None:
+                return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=updated_user)
+    if (existing_user := await db["collection"].find_one({"_id": id})) is not None:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=existing_user)
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
