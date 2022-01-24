@@ -38,6 +38,10 @@ async def home(request: Request):
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED)
             result = user_exists(user)
             if result is False:
+                created_user = create_json_user(user)
+                if not created_user:
+                    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
+            return JSONResponse(status_code=status.HTTP_200_OK, content=user)
         return HTMLResponse('<a href="/login">login</a>')
     request.session.pop('caller', None)
     return RedirectResponse(url='/'+ redi)
