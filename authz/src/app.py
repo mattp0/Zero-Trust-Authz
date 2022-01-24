@@ -10,8 +10,8 @@ from starlette.responses import HTMLResponse, RedirectResponse
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi.responses import JSONResponse
 
-from config import db_api_url
-from helper import add_user
+from helper import create_json_user, user_exists
+from config import email_scope
 
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key=secrets.token_urlsafe(32))
