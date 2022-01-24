@@ -89,4 +89,4 @@ async def delete_user(user: UserModel = Body(...)):
     if res.deletedCount >= 1:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"success": "true"})
     else:
-        return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED, content={"error": "did not delete user"})  
+        return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED)  
