@@ -1,11 +1,11 @@
-from fastapi import FastAPI, Body, HTTPException, status
+from fastapi import FastAPI, Body, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
-from pydantic import BaseModel, Field, EmailStr
-from bson import ObjectId
-from typing import Optional, List
+from typing import List
 import motor.motor_asyncio
+
+from model import UserModel, UpdateUserModel
 
 app = FastAPI()
 client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://root:example@172.23.144.1:8081/?authSource=admin")
