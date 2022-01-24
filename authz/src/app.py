@@ -34,6 +34,8 @@ async def home(request: Request):
     redi = request.session.get('caller')
     if redi is None:
         if user is not None:
+            if user["email"].split("@")[1] != email_scope:
+                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED)
             data = json.dumps(user)
             html = (
                 f'{data}'
