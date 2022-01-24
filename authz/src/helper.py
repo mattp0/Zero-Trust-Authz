@@ -19,4 +19,14 @@ def create_json_user(user):
     if response.status_code == 201:
         return True
     return False 
-        return False      return False 
+
+def user_exists(user):
+    user_endpoint = db_api_url + "/user/" + str(user['sub'])
+    response = requests.get(user_endpoint)
+    if response.status_code == 200:
+        return True
+    elif response.status_code == 404:
+        return False
+    else:
+        raise Exception("Unknown Error as occurred")
+    
