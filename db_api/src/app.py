@@ -81,9 +81,9 @@ async def list_users(sub: str):
 
 @app.post('/delete', response_description="delete a user", response_model=UserModel)
 async def delete_user(user: UserModel = Body(...)):
-    current_user = await db["collection"].find_one({"uuid": user.uuid})
+    current_user = await db["collection"].find_one({"sub": user["sub"]})
     if current_user is not None:
-        res = await db["collection"].deleteOne({"uuid": user.uuid})
+        res = await db["collection"].deleteOne({"sub": user["sub"]})
     else:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": "user not found"})
     if res.deletedCount >= 1:
