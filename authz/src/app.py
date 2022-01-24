@@ -36,11 +36,8 @@ async def home(request: Request):
         if user is not None:
             if user["email"].split("@")[1] != email_scope:
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED)
-            data = json.dumps(user)
-            html = (
-                f'{data}'
-            )
-            return JSONResponse(status_code=status.HTTP_200_OK, content=html)
+            result = user_exists(user)
+            if result is False:
         return HTMLResponse('<a href="/login">login</a>')
     request.session.pop('caller', None)
     return RedirectResponse(url='/'+ redi)
