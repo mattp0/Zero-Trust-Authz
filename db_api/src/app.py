@@ -8,7 +8,7 @@ import motor.motor_asyncio
 from model import UserModel, UpdateUserModel
 
 app = FastAPI()
-client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://root:example@172.23.144.1:8081/?authSource=admin")
+client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://root:example@mongo:27017/?authSource=admin")
 db = client.authn
 
 class UserObject(ObjectId):
