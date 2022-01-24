@@ -13,8 +13,10 @@ def build_user_json(user):
     return json.dumps(json_user)
 
 def create_json_user(user):
-    x = requests.post(full, data=user)
-    if x.status_code == 200:
+    create_user_endpoint = db_api_url+"/create"
+    json_user = build_user_json(user)
+    response = requests.post(create_user_endpoint, json=json_user)
+    if response.status_code == 201:
         return True
-    else:
-        return False  
+    return False 
+        return False      return False 
