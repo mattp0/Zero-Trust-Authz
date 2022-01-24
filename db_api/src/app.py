@@ -72,11 +72,11 @@ async def list_users():
     users = await db["collection"].find().to_list(1000)
     return JSONResponse(status_code=status.HTTP_200_OK, content=users)
 
-@app.get('/user', response_description="Get a user", response_model=UserModel)
-async def list_users(user: UserModel = Body(...)):
-    user = await db["collection"].find_one({"uuid": user})
+@app.get("/user/{sub}", response_description="Get a user", response_model=UserModel)
+async def list_users(sub: str):
+    user = await db["collection"].find_one({"sub": sub})
     if not user:
-        return JSONResponse(status_code=status.HTTP_204_NO_CONTENT)
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="No user found")
     return JSONResponse(status_code=status.HTTP_200_OK, content=user)
 
 @app.post('/delete', response_description="delete a user", response_model=UserModel)
