@@ -1,6 +1,7 @@
 import requests
-def build_user(user):
-    return user
+import json
+from config import db_api_url, base_permissions
+import logging
 
 def build_user_json(user):
     json_user = {
