@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 
 COPY ./authz/src/ .
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["gunicorn", "app:app", "-w", "2", "--threads", "2", "-b", "0.0.0.0:80"]
