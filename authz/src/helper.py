@@ -30,3 +30,13 @@ def user_exists(user):
     else:
         raise Exception("Unknown Error as occurred")
     
+def create_query_client_func(session, client_model):
+    """Create an ``query_client`` function that can be used in authorization
+    server.
+    :param session: MongoDB session
+    :param client_model: Client model class
+    """
+    def query_client(client_id):
+        q = session.query(client_model)
+        return q.filter_by(client_id=client_id).first()
+    return query_client
