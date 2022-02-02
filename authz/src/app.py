@@ -1,90 +1,62 @@
 import secrets
-
-from fastapi import FastAPI, status
-from starlette.config import Config
-from starlette.requests import Request
-from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import HTMLResponse, RedirectResponse
-from authlib.integrations.starlette_client import OAuth, OAuthError
-from fastapi.responses import JSONResponse
+from flask import Flask, render_template, redirect, session, url_for, Response
+from dotenv import load_dotenv
+import os
+from flask_dance.contrib.google import make_google_blueprint, google
 
 from helper import create_json_user, user_exists
 from config import email_scope
 
-app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=secrets.token_urlsafe(32))
 
-config = Config('.env')
-oauth = OAuth(config)
+load_dotenv()
+app = Flask(__name__)
+client_id = os.getenv('GOOGLE_CLIENT_ID')
+client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+app.secret_key = secrets.token_urlsafe(32)
 
-CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
-oauth.register(
-    name='google',
-    server_metadata_url=CONF_URL,
-    client_kwargs={
-        'scope': 'openid email profile'
-    }
-)
+os.environ['OAUTHLIB_INSECURE_TRANSPORT']='1'
+os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']='1'
 
-@app.get('/')
-async def home(request: Request):
-    user = request.session.get('user')
-    redi = request.session.get('caller')
-    if redi is None:
-        if user is not None:
-            if user["email"].split("@")[1] != email_scope:
-                return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED)
-            result = user_exists(user)
-            if result is False:
-                created_user = create_json_user(user)
-                if not created_user:
-                    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
-            return JSONResponse(status_code=status.HTTP_200_OK, content=user)
-        return HTMLResponse('<a href="/login">login</a>')
-    request.session.pop('caller', None)
-    return RedirectResponse(url='/'+ redi)
+blueprint = make_google_blueprint(
+    client_id=client_id,
+    client_secret=client_secret,
+    reprompt_consent=True,
+    scope=["profile", "email", "openid"]
+    )
 
-@app.get('/login', tags=['authentication'])  # Tag it as "authentication" for our docs
-async def login(request: Request):
-    redirect_uri = request.url_for('auth')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+app.register_blueprint(blueprint, url_prefix="/login")
 
-@app.route('/auth')
-async def auth(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    user = await oauth.google.parse_id_token(request, token)
-    request.session['user'] = dict(user)
-    return RedirectResponse(url='/')
+@app.route('/')
+def home():
+    user_info_endpoint = '/oauth2/v2/userinfo'
+    if google.authorized:
+        session['User'] = google.get(user_info_endpoint).json()
+        return render_template('index.j2',
+                            google_data=session['User'],
+                            fetch_url=google.base_url + user_info_endpoint
+                        )
+    return redirect(url_for("login"))
 
-@app.get('/logout', tags=['authentication'])  # Tag it as "authentication" for our docs
-async def logout(request: Request):
-    request.session.pop('user', None)
-    request.session.pop('caller', None)
-    return RedirectResponse(url='/')
+@app.route('/login')
+def login():
+    return redirect(url_for('google.login'))
 
-@app.get('/permissions', tags=['authorization']) # Tag it as "authorization" for our docs
-async def permissions(request: Request):
-    user = request.session.get('user')
-    if user is not None:
-        return HTMLResponse('permissions_end_point')
-    else:
-        request.session['caller'] = 'permissions'
-        return RedirectResponse(url='/login')
 
-@app.get('/authorize', tags=['authorization']) # Tag it as "authorization" for our docs
-async def authorize(request: Request):
-    user = request.session.get('user')
-    if user is not None:
-        return HTMLResponse('authorize_end_point')
-    else:
-        request.session['caller'] = 'authorize'
-        return RedirectResponse(url='/login')
+@app.route('/logout') 
+def logout():
+    session.pop('User', None)
 
-@app.get('/token', tags=['authorization']) # Tag it as "authorization" for our docs
-async def token(request: Request):
-    user = request.session.get('user')
-    if user is not None:
-        return HTMLResponse('token_end_point')
-    else:
-        request.session['caller'] = 'token'
-        return RedirectResponse(url='/login')
+@app.route('/permissions')
+def permissions():
+    pass
+
+@app.route('/authorize')
+def authorize():
+    pass
+
+@app.route('/token')
+def token():
+    pass
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8060)
