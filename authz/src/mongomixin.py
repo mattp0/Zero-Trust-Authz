@@ -185,3 +185,34 @@ class MongoClientMixin(ClientMixin, BaseModel):
 
     def check_grant_type(self, grant_type):
         return grant_type in self.grant_types
+
+
+class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
+    def __init__(self, info: dict):
+        self.code:str=info["code"]
+        self.client_id:str=info["client_id"]
+        self.redirect_uri:str=info["redirect_uri"]
+        self.response_type:str=info["response_type"]
+        self.scope:str=info["scope"]
+        self.nonce:str=info["nonce"]
+        self.auth_time:int=info["auth_time"]
+        self.code_challenge:str=info["code_challenge"]
+        self.code_challenge_method:str=info["code_challenge_method"]
+
+    def is_expired(self):
+        return self.auth_time + 300 < time.time()
+
+    def get_redirect_uri(self):
+        return self.redirect_uri
+
+    def get_scope(self):
+        return self.scope
+
+    def get_auth_time(self):
+        return self.auth_time
+
+    def get_nonce(self):
+        return self.nonce
+
+
+class OAuth2TokenMixin(TokenMixin):
