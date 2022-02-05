@@ -2,6 +2,7 @@ import requests
 import json
 from config import db_api_url, base_permissions
 import logging
+import time
 
 def build_user_json(user):
     json_user = {
@@ -29,16 +30,15 @@ def user_exists(user):
         return False
     else:
         raise Exception("Unknown Error as occurred")
-    
-def create_query_client_func(session, client_model):
+
+
+def create_query_client_func():
     """Create an ``query_client`` function that can be used in authorization
     server.
-    :param session: MongoDB session
-    :param client_model: Client model class
     """
     def query_client(client_id):
-        q = session.query(client_model)
-        return q.filter_by(client_id=client_id).first()
+       #TODO create db api call to query by client id
+       return True
     return query_client
 
 
