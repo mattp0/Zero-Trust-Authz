@@ -40,3 +40,22 @@ def create_query_client_func(session, client_model):
         q = session.query(client_model)
         return q.filter_by(client_id=client_id).first()
     return query_client
+
+
+def create_bearer_token_validator():
+    """Create an bearer token validator class
+    """
+    from authlib.oauth2.rfc6750 import BearerTokenValidator
+
+    class _BearerTokenValidator(BearerTokenValidator):
+        def authenticate_token(self, token_string):
+            #search for token in db api call. returns the token
+            return token_string
+
+        def request_invalid(self, request):
+            return False
+
+        def token_revoked(self, token):
+            return token.revoked
+
+    return _BearerTokenValidator
