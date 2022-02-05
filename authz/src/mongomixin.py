@@ -216,3 +216,35 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
 
 
 class OAuth2TokenMixin(TokenMixin):
+    def __int__(self, info:dict):
+        self.client_id:str=info["client_id"]
+        self.token_type:str=info["token_type"]
+        self.access_token:str=info["access_token"]
+        self.refresh_token:str=info["refresh_token"]
+        self.scope:str=info["scope"]
+        self.issued_at:int=info["issued_at"]
+        self.access_token_revoked_at:int=info["access_token_revoked_at"]
+        self.refresh_token_revoked_at:int=info["refresh_token_revoked_at"]
+        self.expires_in:int=info["expires_in"]
+
+    def check_client(self, client):
+        return self.client_id == client.get_client_id()
+
+    def get_scope(self):
+        return self.scope
+
+    def get_expires_in(self):
+        return self.expires_in
+
+    def is_revoked(self):
+        return self.access_token_revoked_at or self.refresh_token_revoked_at
+
+    def is_expired(self):
+        if not self.expires_in:
+            return False
+
+        expires_at = self.issued_at + self.expires_in
+        return expires_at < time.time()
+
+
+
