@@ -7,6 +7,7 @@ from flask_dance.contrib.google import make_google_blueprint, google
 from helper import create_json_user, user_exists
 from config import email_scope
 
+from oauth import authorization, require_oauth
 
 load_dotenv()
 app = Flask(__name__)
