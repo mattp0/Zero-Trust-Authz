@@ -248,3 +248,10 @@ class OAuth2TokenMixin(TokenMixin):
 
 
 
+def main():
+    mix = Oauth2ClientMixin(client_info, meta)
+    print((mix.get_client_id()))
+    return 1
+
+if __name__ == "__main__":
+    main()
