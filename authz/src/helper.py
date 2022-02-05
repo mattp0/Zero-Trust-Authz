@@ -42,6 +42,18 @@ def create_query_client_func(session, client_model):
     return query_client
 
 
+def create_query_token_func():
+    """Create an ``query_token`` function for revocation, introspection
+    token endpoints.
+    """
+    def query_token(token, token_type_hint):
+        if token_type_hint == 'access_token':
+            return True # need to define a db api call to look at token by access
+        elif token_type_hint == 'refresh_token':
+            return True # need to define a db api call to look at token by refresh
+    return query_token
+
+
 def create_revocation_endpoint():
     """Create a revocation endpoint class
     """
