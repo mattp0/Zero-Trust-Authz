@@ -6,61 +6,14 @@ from bson import ObjectId
 from typing import Dict, List
 import secrets
 
-class ClientObject(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-    
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid Object")
-        return ObjectId(v)
-    
-    @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+class Oauth2ClientMixin(ClientMixin):
+    def __init__(self, info : dict, metadata: dict):
+        self.client_id: str = info['client_id']
+        self.client_secret: str = info['client_secret']
+        self.client_id_issued_at: int = info['client_id_issued_at']
+        self.client_secret_expires_at: int = info['client_secret_expires_at']
+        self._client_metadata = metadata
 
-class ClientMetadata(BaseModel):
-    redirect_uris: List[str]
-    token_endpoint_auth_method: str
-    client_secret_basic: str
-    grant_types: List[str]
-    response_types: List[str]
-    client_name: str
-    client_uri: str
-    logo_uri: str
-    scope: str
-    contacts: List[str]
-    tos_uri: str
-    policy_uri: str
-    jwks_uri: str
-    jwks: List[str]
-    software_id: str
-    software_version: str
-    
-
-
-class MongoClientMixin(ClientMixin, BaseModel):
-    client_id: ClientObject = Field(default_factory=ClientObject, alias="_id")
-    client_secret: str = Field(...)
-    client_id_issued_at: int = Field(...)
-    client_secret_expires_at: int = Field(...)
-    _client_metadata: ClientMetadata = Field(...)
-
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
-            "example": {
-                "client_id": "1231231231",
-                "client_secret": "joe bob",
-                "client_id_issued_at": 45123,
-                "client_secret_expires_at": 84000,
-                "_client_metadata": ["web", "admin", "chat"],
-            }
-        }
     #based on requiremnets for the client mixin from authlib
     @property
     def client_info(self):
@@ -80,7 +33,8 @@ class MongoClientMixin(ClientMixin, BaseModel):
         if 'client_metadata' in self.__dict__:
             return self.__dict__['client_metadata']
         if self._client_metadata:
-            data = json_loads(self._client_metadata)
+            data = json_dumps(self._client_metadata)
+            data = json_loads(data)
             self.__dict__['client_metadata'] = data
             return data
         return {}
