@@ -42,6 +42,27 @@ def create_query_client_func(session, client_model):
     return query_client
 
 
+def create_revocation_endpoint():
+    """Create a revocation endpoint class
+    """
+    from authlib.oauth2.rfc7009 import RevocationEndpoint
+    query_token = create_query_token_func()
+
+    class _RevocationEndpoint(RevocationEndpoint):
+        def query_token(self, token, token_type_hint):
+            return query_token(token, token_type_hint)
+
+        def revoke_token(self, token, request):
+            now = int(time.time())
+            hint = request.form.get('token_type_hint')
+            token.access_token_revoked_at = now
+            if hint != 'access_token':
+                token.refresh_token_revoked_at = now
+            #write token to db api
+
+    return _RevocationEndpoint
+
+
 def create_bearer_token_validator():
     """Create an bearer token validator class
     """
