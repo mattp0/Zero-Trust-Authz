@@ -42,6 +42,26 @@ def create_query_client_func(session, client_model):
     return query_client
 
 
+def create_save_token_func():
+    """Create an ``save_token`` function that can be used in authorization
+    server.
+    """
+    def save_token(token, request):
+        if request.user:
+            user_id = request.user.get_user_id()
+        else:
+            user_id = None
+        client = request.client
+        #parse token into api call
+        item ={
+            "client_id":client.client_id,
+            "user_id":user_id,
+            "token":token,
+        }
+        #TODO add mongo API call to save token!
+    return save_token
+
+
 def create_query_token_func():
     """Create an ``query_token`` function for revocation, introspection
     token endpoints.
