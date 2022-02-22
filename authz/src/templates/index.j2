@@ -2,7 +2,7 @@
 <html class="no-js" lang"">
 
 <head>
-<title>Google Oauth 2.0 Login for Authn </title>
+<title>User info for Authn </title>
 
 <style>
 @import url(https://fonts.googleapis.com/css?family=Roboto:500);
@@ -57,21 +57,6 @@ boddy {
 </head>
 
 <body>
-<h3> Google Login </h3>
-{% if not google_data %}
-    <p style"color:#333;"> You are not logged in, Click below to sing in with google.
-    </p>
-    <a href="/login" class="google-btn">
-      <div class="google-icon-wrapper">
-        <img class="google-icon"
-            src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"/>
-      </div>
-        <p class="btn-text"><b>Sign in with Google</b>
-        </p>
-    </a>
-{% else%}
-    <p> Hi {{ google_data.name }}, [<strong>{{ google_data.email }}</strong>]. You have logged in successfully from your Google Account 
-    </p>
 {% if google_data is not none %}   
     <div class="detail">
         <p style="font-size: 15px; oadding-boittom: 10px;"> User info fetched from <strong>{{ fetch_url }}</strong>
@@ -81,6 +66,5 @@ boddy {
             </p>
         {% endfor %}
     </div>
-{% endif %}
 {% endif %}
 </html>
