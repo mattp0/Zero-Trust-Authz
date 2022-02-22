@@ -1,28 +1,47 @@
 version: '3.1'
 
 services:
-  mongo:
-    image: mongo
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: authz
+  # mongo:
+  #   container_name: authz-mongo
+  #   image: mongo
+  #   restart: always
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: example
+  #     MONGO_INITDB_DATABASE: authz
+  #   ports:
+  #     - "8081:27017"
+  #   volumes:
+  #     - ./data:/data/db
+  # authz:
+  #   container_name: authz-auth
+  #   build:
+  #     context: ./
+  #     dockerfile: ./authz/Dockerfile
+  #   ports:
+  #     - "8060:80"
+  #   restart: unless-stopped
+  # dbpi:
+  #   container_name: authz-dbapi
+  #   build:
+  #     context: ./
+  #     dockerfile: ./db_api/Dockerfile
+  #   ports:
+  #     - "8070:80"
+  #   restart: unless-stopped
+  nginx:
+    image: nginx:1.15-alpine
     ports:
-      - "0.0.0.0:8081:27017"
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./data:/data/db
-  authz:
-    build:
-      context: ./
-      dockerfile: ./authz/Dockerfile
-    ports:
-      - "0.0.0.0:8060:80"
+      - ./nginx/data:/var/www/data
+      - ./nginx/logs:/var/log/nginx
+      - ./nginx/app.conf:/etc/nginx/nginx.conf
     restart: unless-stopped
-  dbpi:
-    build:
-      context: ./
-      dockerfile: ./db_api/Dockerfile
-    ports:
-      - "0.0.0.0:8070:80"
-    restart: unless-stopped
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+  vouch:
+    container_name: authz-vouch
+    image: quay.io/vouch/vouch-proxy:latest
+    volumes: 
+      - ./vouch/:/config
