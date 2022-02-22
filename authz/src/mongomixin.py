@@ -126,7 +126,6 @@ class Oauth2ClientMixin(ClientMixin):
         return response_type in self.response_types
 
     def check_grant_type(self, grant_type):
-        print("crashing on grant types")
         return grant_type in self.grant_types
 
 
