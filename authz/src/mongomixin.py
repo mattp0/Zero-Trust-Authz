@@ -3,8 +3,11 @@ from authlib.oauth2.rfc6749 import ClientMixin, TokenMixin, AuthorizationCodeMix
 from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
 from  mock_info import meta, client_info
 import time
+from werkzeug.utils import cached_property
+import json
 
 class Oauth2ClientMixin(ClientMixin):
+    "client mixin definition"
     def __init__(self, info : dict, metadata: dict):
         self.client_id: str = info['client_id']
         self.client_secret: str = info['client_secret']
@@ -21,21 +24,11 @@ class Oauth2ClientMixin(ClientMixin):
             client_id_issued_at=self.client_id_issued_at,
             client_secret_expires_at=self.client_secret_expires_at,
             )
-    @property
+    @cached_property
     def client_metadata(self):
         if self._client_metadata:
-            return self._client_metadata
+            return json_loads(json_dumps(self._client_metadata))
         return None
-    @property
-    def client_metadata(self):
-        if 'client_metadata' in self.__dict__:
-            return self.__dict__['client_metadata']
-        if self._client_metadata:
-            data = json_dumps(self._client_metadata)
-            data = json_loads(data)
-            self.__dict__['client_metadata'] = data
-            return data
-        return {}
 
     def set_client_metadata(self, value):
         self._client_metadata = json_dumps(value)
@@ -73,7 +66,7 @@ class Oauth2ClientMixin(ClientMixin):
 
     @property
     def scope(self):
-        return self.client_metadata.get('scope', '')
+        return self.client_metadata.get('scope')
 
     @property
     def contacts(self):
@@ -126,20 +119,18 @@ class Oauth2ClientMixin(ClientMixin):
     def check_client_secret(self, client_secret):
         return self.client_secret == client_secret
 
-    def check_endpoint_auth_method(self, method, endpoint):
-        if endpoint == 'token':
-            return self.token_endpoint_auth_method == method
-        # TODO
-        return True
+    def check_token_endpoint_auth_method(self, method):
+        return self.token_endpoint_auth_method == method
 
     def check_response_type(self, response_type):
         return response_type in self.response_types
 
     def check_grant_type(self, grant_type):
+        print("crashing on grant types")
         return grant_type in self.grant_types
 
 
-class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
+class Oauth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     def __init__(self, info: dict):
         self.code:str=info["code"]
         self.client_id:str=info["client_id"]
@@ -148,11 +139,9 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
         self.scope:str=info["scope"]
         self.nonce:str=info["nonce"]
         self.auth_time:int=info["auth_time"]
-        self.code_challenge:str=info["code_challenge"]
-        self.code_challenge_method:str=info["code_challenge_method"]
 
     def is_expired(self):
-        return self.auth_time + 300 < time.time()
+        return self.auth_time + 8000000 < time.time()
 
     def get_redirect_uri(self):
         return self.redirect_uri
@@ -167,8 +156,8 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
         return self.nonce
 
 
-class OAuth2TokenMixin(TokenMixin):
-    def __int__(self, info:dict):
+class Oauth2TokenMixin(TokenMixin):
+    def __int__(self, info: dict):
         self.client_id:str=info["client_id"]
         self.token_type:str=info["token_type"]
         self.access_token:str=info["access_token"]
@@ -194,9 +183,9 @@ class OAuth2TokenMixin(TokenMixin):
     def is_expired(self):
         if not self.expires_in:
             return False
-
-        expires_at = self.issued_at + self.expires_in
-        return expires_at < time.time()
+    
+    def get_expires_at(self):
+        return self.issued_at + self.expires_in
 
 
 
