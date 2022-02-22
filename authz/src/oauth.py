@@ -34,13 +34,11 @@ def create_authorization_code(client, grant_user, request):
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):
-        print("making a code")
         return create_authorization_code(client, grant_user, request)
 
     def parse_authorization_code(self, code, client):
         #todo query the dbapi for authorization codes
         item = Oauth2AuthorizationCodeMixin(auth_code_info)
-        print("asked to checkout this auth code: ", code)
         if item and not item.is_expired():
             return item
 
