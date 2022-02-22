@@ -37,7 +37,6 @@ def user_exists(user):
 
 def query_client(client_id):
     #query dbapi by the client id
-    print("querying the client!")
     client = Oauth2ClientMixin(client_info, meta)
     print(client.client_id, client_id)
     return client
@@ -55,7 +54,6 @@ def save_token(token_data, request):
         "token":token_data,
     }
     token = (item)
-    print("looking to save the token!")
     print(token)
     #TODO add mongo API call to save token!
   
@@ -66,7 +64,6 @@ def create_query_token_func():
     token endpoints.
     """
     def query_token(token, token_type_hint):
-        print("we are looking for tokens?")
         if token_type_hint == 'access_token':
             return True # need to define a db api call to look at token by access
         elif token_type_hint == 'refresh_token':
@@ -103,7 +100,6 @@ def create_bearer_token_validator():
     class _BearerTokenValidator(BearerTokenValidator):
         def authenticate_token(self, token_string):
             #search for token in db api call. returns the token
-            print("creating a token")
             token = Oauth2TokenMixin()
             print(token)
             print(token_string)
