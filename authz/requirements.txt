@@ -5,3 +5,7 @@ itsdangerous
 authlib
 httpx
 requests
+gunicorn
+flask
+python-dotenv
+Flask-Dance
