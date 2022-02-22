@@ -49,7 +49,6 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def authenticate_user(self, authorization_code):
         #add db api call to authenticate user, returns a user
         user = User(fake_user)
-        print("authorizing a user")
         return user
 
 def exists_nonce(nonce, req):
