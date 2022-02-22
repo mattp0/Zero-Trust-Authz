@@ -68,9 +68,7 @@ def authorize():
     if "User" not in session:
         return redirect(url_for("google.login", next=request.url))
     user = User(session['User'])
-    print("user created", user)
     if request.method == 'GET':
-        print("got a get request")
         try:
             grant = authorization.validate_consent_request(end_user=user)
         except OAuth2Error as error:
