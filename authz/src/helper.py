@@ -3,6 +3,8 @@ import json
 from config import db_api_url, base_permissions
 import logging
 import time
+from mongomixin import Oauth2ClientMixin, Oauth2AuthorizationCodeMixin, Oauth2TokenMixin
+from mock_info import client_info, meta, token_info
 
 def build_user_json(user):
     json_user = {
@@ -29,37 +31,34 @@ def user_exists(user):
     elif response.status_code == 404:
         return False
     else:
+        print(response.status_code)
         raise Exception("Unknown Error as occurred")
 
 
-def create_query_client_func():
-    """Create an ``query_client`` function that can be used in authorization
-    server.
-    """
-    def query_client(client_id):
-       #TODO create db api call to query by client id
-       return True
-    return query_client
-
-
-def create_save_token_func():
-    """Create an ``save_token`` function that can be used in authorization
-    server.
-    """
-    def save_token(token, request):
-        if request.user:
-            user_id = request.user.get_user_id()
-        else:
-            user_id = None
-        client = request.client
-        #parse token into api call
-        item ={
-            "client_id":client.client_id,
-            "user_id":user_id,
-            "token":token,
-        }
-        #TODO add mongo API call to save token!
-    return save_token
+def query_client(client_id):
+    #query dbapi by the client id
+    print("querying the client!")
+    client = Oauth2ClientMixin(client_info, meta)
+    print(client.client_id, client_id)
+    return client
+  
+def save_token(token_data, request):
+    if request.user:
+        user_id = request.user.get_user_id()
+    else:
+        user_id = None
+    client = request.client
+    #parse token into api call
+    item ={
+        "client_id":client.client_id,
+        "user_id":user_id,
+        "token":token_data,
+    }
+    token = (item)
+    print("looking to save the token!")
+    print(token)
+    #TODO add mongo API call to save token!
+  
 
 
 def create_query_token_func():
@@ -67,6 +66,7 @@ def create_query_token_func():
     token endpoints.
     """
     def query_token(token, token_type_hint):
+        print("we are looking for tokens?")
         if token_type_hint == 'access_token':
             return True # need to define a db api call to look at token by access
         elif token_type_hint == 'refresh_token':
@@ -103,7 +103,11 @@ def create_bearer_token_validator():
     class _BearerTokenValidator(BearerTokenValidator):
         def authenticate_token(self, token_string):
             #search for token in db api call. returns the token
-            return token_string
+            print("creating a token")
+            token = Oauth2TokenMixin()
+            print(token)
+            print(token_string)
+            return token
 
         def request_invalid(self, request):
             return False
