@@ -3,7 +3,7 @@ meta = {
     "token_endpoint_auth_method": "client_secret_basic",
     "grant_types": ["authorization_code"],
     "response_types": ["code"],
-    "client_name": "this sweet thing",
+    "client_name": "The Main Frame",
     "client_uri": "http://localhost",
     "scope": "openid profile email",
 }
