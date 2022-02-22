@@ -56,15 +56,11 @@ def logout():
 @app.route('/userinfo')
 # @require_oauth('profile')
 def permissions():
-    print("inside user info!")
     user = User(fake_user)
-
     return jsonify(generate_user_info(user, "openid profile email"))
 
 @app.route('/authorize', methods=['GET', 'POST'])
 def authorize():
-    print(authorization._authorization_grants)
-    print('got a authroize request')
     print(request.query_string)
     user_info_endpoint = '/oauth2/v2/userinfo'
     if google.authorized:
@@ -76,14 +72,10 @@ def authorize():
     if request.method == 'GET':
         print("got a get request")
         try:
-            print("trying to get a grant")
             grant = authorization.validate_consent_request(end_user=user)
-            print(grant)
-            print(type(grant))
         except OAuth2Error as error:
             return jsonify(dict(error.get_body()))
         return render_template('authorize.html', user=user, grant=grant)
-    print("got a post")
     if request.form['confirm']:
         grant_user = user
     else:
@@ -93,8 +85,6 @@ def authorize():
 
 @app.route('/token/', methods=['POST'])
 def token():
-    print("we got a post to token")
-    print(request.form)
     return authorization.create_token_response()
 
 if __name__ == "__main__":
