@@ -1,18 +1,18 @@
 version: '3.1'
 
 services:
-  # mongo:
-  #   container_name: authz-mongo
-  #   image: mongo
-  #   restart: always
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: root
-  #     MONGO_INITDB_ROOT_PASSWORD: example
-  #     MONGO_INITDB_DATABASE: authz
-  #   ports:
-  #     - "8081:27017"
-  #   volumes:
-  #     - ./data:/data/db
+  mongo:
+    container_name: authz-mongo
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: authz
+    ports:
+      - "8081:27017"
+    volumes:
+      - ./data:/data/db
   # authz:
   #   container_name: authz-auth
   #   build:
@@ -21,14 +21,14 @@ services:
   #   ports:
   #     - "8060:80"
   #   restart: unless-stopped
-  # dbpi:
-  #   container_name: authz-dbapi
-  #   build:
-  #     context: ./
-  #     dockerfile: ./db_api/Dockerfile
-  #   ports:
-  #     - "8070:80"
-  #   restart: unless-stopped
+  dbpi:
+    container_name: authz-dbapi
+    build:
+      context: ./
+      dockerfile: ./db_api/Dockerfile
+    ports:
+      - "8070:80"
+    restart: unless-stopped
   nginx:
     image: nginx:1.15-alpine
     ports:
