@@ -154,6 +154,8 @@ class Oauth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     def get_nonce(self):
         return self.nonce
 
+    def get_code(self):
+        return self.code
 
 class Oauth2TokenMixin(TokenMixin):
     def __int__(self, info: dict):
