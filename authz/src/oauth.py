@@ -1,4 +1,4 @@
-import email
+from urllib import response
 from authlib.integrations.flask_oauth2 import (
     AuthorizationServer,
     ResourceProtector,
@@ -12,11 +12,15 @@ from mongomixin import Oauth2ClientMixin, Oauth2AuthorizationCodeMixin, Oauth2To
 from helper import (
     create_bearer_token_validator,
     query_client,
-    save_token
+    save_token,
+    create_authz_code,
+    get_authz_code,
+    delete_authz_code,
+
 )
 from model import User
-import secrets
-from mock_info import auth_code_info, fake_user
+import json
+from mock_info import fake_user
 
 DUMMY_JWT_CONFIG = {
     'key': 'secret-key',
@@ -26,28 +30,33 @@ DUMMY_JWT_CONFIG = {
 }
 
 def create_authorization_code(client, grant_user, request):
-    code = 123456789
-    nonce = request.data.get('nonce')
-    item = Oauth2AuthorizationCodeMixin(auth_code_info)
-    #write to db api the auth code
-    return code
+    data = {
+        "client_id": client.client_id,
+        "redirect_uri": request.redirect_url,
+        "scope": request.scope,
+        "grant_user": grant_user.id,
+        "nonce": request.data.get('nonce')
+    }
+    info = json.loads(create_authz_code(data))
+    item = Oauth2AuthorizationCodeMixin(info)
+    return item.get_code()
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):
         return create_authorization_code(client, grant_user, request)
 
     def parse_authorization_code(self, code, client):
-        #todo query the dbapi for authorization codes
-        item = Oauth2AuthorizationCodeMixin(auth_code_info)
+        info = json.loads(get_authz_code(code))
+        item = Oauth2AuthorizationCodeMixin(info)
         if item and not item.is_expired():
             return item
 
     def delete_authorization_code(self, authorization_code):
-        pass
-        #add db api call to delete authorization_code 
+        res = delete_authz_code(authorization_code)
 
     def authenticate_user(self, authorization_code):
-        #add db api call to authenticate user, returns a user
+        info = json.loads(get_authz_code(authorization_code))
+        
         user = User(fake_user)
         return user
 
@@ -56,7 +65,7 @@ def exists_nonce(nonce, req):
 
 def generate_user_info(user, scope):
     print(user)
-    return UserInfo(name=user.get_name(), email=user.get_email())
+    return UserInfo(name=user.get_name(), email=user.get_email(), team="web")
 
 class OpenIDCode(_OpenIDCode):
     def exists_nonce(self, nonce, request):
