@@ -16,7 +16,7 @@ def build_user_json(user):
     return json.dumps(json_user)
 
 def create_json_user(user):
-    create_user_endpoint = db_api_url+"/create"
+    create_user_endpoint = db_api_url+"/user/create"
     json_user = build_user_json(user)
     response = requests.post(create_user_endpoint, json=json_user)
     if response.status_code == 201:
@@ -34,11 +34,32 @@ def user_exists(user):
         print(response.status_code)
         raise Exception("Unknown Error as occurred")
 
+def create_authz_code(data):
+    update_endpoint = db_api_url + "/authcode/create"
+    response = requests.post(update_endpoint, data=json.dumps(data))
+    if response.status_code == 200:
+        return response.content
+    return None
+
+def get_authz_code(code):
+    update_endpoint = db_api_url + "/authcode/" + code
+    response = requests.get(update_endpoint)
+    if response.status_code == 200:
+        return response.content
+    return None
+
+def delete_authz_code(code):
+    update_endpoint = db_api_url + "/authcode/delete/" + code
+    response = requests.get(update_endpoint)
+    if response.status_code == 200:
+        return True
+    return False
 
 def query_client(client_id):
-    #query dbapi by the client id
+    client_endpoint = db_api_url + "/client/" + str(client_id)
+    response = requests.get(client_endpoint)
+    print(response)
     client = Oauth2ClientMixin(client_info, meta)
-    print(client.client_id, client_id)
     return client
   
 def save_token(token_data, request):
@@ -64,6 +85,7 @@ def create_query_token_func():
     token endpoints.
     """
     def query_token(token, token_type_hint):
+        print("inside qury token", token)
         if token_type_hint == 'access_token':
             return True # need to define a db api call to look at token by access
         elif token_type_hint == 'refresh_token':
