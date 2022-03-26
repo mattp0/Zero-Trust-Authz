@@ -9,7 +9,6 @@ vouch:
   # https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/#redirect-urls
   # each of these domains must serve the url https://login.$domains[0] https://login.$domains[1] ...
   loglevel: debug
-  testing: true
   domains:
   - localhost
   - host.docker.internal
@@ -23,14 +22,16 @@ vouch:
     secure: false
     # vouch.cookie.domain must be set when enabling allowAllUsers
     #  domain: yourdomain.com
-
+  headers:
+    idtoken: X-Vouch-IdP-IdToken
+    claims:
+      - team
+      - email
 
 oauth:
-  # Generic OpenID Connect
-  # including okta
   provider: oidc
-  client_id: 123456789
-  client_secret: 123456
+  client_id: 623e9246edbe11b44fcd2584
+  client_secret: M9UEmClSSNWF0luDMnwLVgTHK4r5aIDWF35E0tEg9kk
   auth_url: http://localhost:8060/authorize
   token_url: http://host.docker.internal:8060/token
   user_info_url: http://host.docker.internal:8060/userinfo
