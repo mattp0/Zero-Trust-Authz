@@ -1,4 +1,3 @@
-from urllib import response
 from authlib.integrations.flask_oauth2 import (
     AuthorizationServer,
     ResourceProtector,
@@ -8,7 +7,7 @@ from authlib.oauth2.rfc6749.grants import (
 )
 from authlib.oidc.core import UserInfo
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
-from mongomixin import Oauth2ClientMixin, Oauth2AuthorizationCodeMixin, Oauth2TokenMixin
+from mongomixin import Oauth2AuthorizationCodeMixin
 from helper import (
     create_bearer_token_validator,
     query_client,
@@ -19,7 +18,6 @@ from helper import (
     get_user_by_id
 
 )
-from flask import session
 from model import User
 import json
 import secrets

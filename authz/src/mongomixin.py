@@ -1,10 +1,7 @@
 from authlib.common.encoding import json_loads, json_dumps
 from authlib.oauth2.rfc6749 import ClientMixin, TokenMixin, AuthorizationCodeMixin
 from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
-from  mock_info import meta, client_info
 import time
-from werkzeug.utils import cached_property
-import json
 
 class Oauth2ClientMixin(ClientMixin):
     "client mixin definition"

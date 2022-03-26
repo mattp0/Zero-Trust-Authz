@@ -1,14 +1,12 @@
 import secrets
-from flask import Flask, render_template, redirect, session, url_for, Response, request, jsonify
+from flask import Flask, redirect, session, url_for, request, jsonify
 from dotenv import load_dotenv
 import os
 from flask_dance.contrib.google import make_google_blueprint, google
 from authlib.oauth2 import OAuth2Error
-from mongomixin import Oauth2ClientMixin 
 from oauth import authorization, require_oauth, generate_user_info, config_oauth
 from model import User
-from helper import user_exists, create_json_user, get_user_by_id
-from mock_info import fake_user
+from helper import user_exists, create_json_user
 import json
 from authlib.integrations.flask_oauth2 import current_token
 
@@ -23,6 +21,7 @@ config_oauth(app)
 #need to do something else
 os.environ['OAUTHLIB_INSECURE_TRANSPORT']='1'
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']='1'
+os.environ['AUTHLIB_INSECURE_TRANSPORT']='1'
 
 blueprint = make_google_blueprint(
     client_id=client_id,

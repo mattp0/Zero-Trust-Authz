@@ -3,7 +3,7 @@ import json
 from config import db_api_url, base_permissions, domain
 import logging
 import time
-from mongomixin import Oauth2ClientMixin, Oauth2AuthorizationCodeMixin, Oauth2TokenMixin
+from mongomixin import Oauth2ClientMixin, Oauth2TokenMixin
 
 def build_user_json(user):
     json_user = {
