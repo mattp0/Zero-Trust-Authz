@@ -28,7 +28,7 @@ blueprint = make_google_blueprint(
     client_secret=client_secret,
     reprompt_consent=True,
     scope=["profile", "email", "openid"],
-    redirect_url="/authorize"
+    redirect_url="http://auth.mperry.io/authorize"
     )
 
 app.register_blueprint(blueprint, url_prefix="/login")
