@@ -16,26 +16,25 @@ from helper import (
     create_authz_code,
     get_authz_code,
     delete_authz_code,
+    get_user_by_id
 
 )
+from flask import session
 from model import User
 import json
-from mock_info import fake_user
-
-DUMMY_JWT_CONFIG = {
-    'key': 'secret-key',
-    'alg': 'HS256',
-    'iss': 'https://mperry.io',
-    'exp': 3600,
-}
+import secrets
+import time
+from config import DUMMY_JWT_CONFIG
 
 def create_authorization_code(client, grant_user, request):
     data = {
         "client_id": client.client_id,
-        "redirect_uri": request.redirect_url,
+        "redirect_uri": request.redirect_uri,
+        "response_type":request.response_type,
         "scope": request.scope,
         "grant_user": grant_user.id,
-        "nonce": request.data.get('nonce')
+        "nonce": secrets.token_urlsafe(16),
+        "auth_time": int(time.time())
     }
     info = json.loads(create_authz_code(data))
     item = Oauth2AuthorizationCodeMixin(info)
@@ -52,20 +51,21 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
             return item
 
     def delete_authorization_code(self, authorization_code):
-        res = delete_authz_code(authorization_code)
+        res = delete_authz_code(authorization_code.get_code())
 
     def authenticate_user(self, authorization_code):
-        info = json.loads(get_authz_code(authorization_code))
-        
-        user = User(fake_user)
+        info = json.loads(get_authz_code(authorization_code.get_code()))
+        user_data = get_user_by_id(info['grant_user'])
+        user = User(json.loads(user_data))
         return user
 
 def exists_nonce(nonce, req):
     return True
 
 def generate_user_info(user, scope):
-    print(user)
-    return UserInfo(name=user.get_name(), email=user.get_email(), team="web")
+    token_user = get_user_by_id(user)
+    token_user = User(json.loads(token_user))
+    return UserInfo(name=token_user.get_name(), email=token_user.get_email(), team="bad")
 
 class OpenIDCode(_OpenIDCode):
     def exists_nonce(self, nonce, request):
@@ -75,7 +75,7 @@ class OpenIDCode(_OpenIDCode):
         return DUMMY_JWT_CONFIG
 
     def generate_user_info(self, user, scope):
-        return generate_user_info(user, scope)
+        return generate_user_info(user.get_user_id(), scope)
 
 
 authorization = AuthorizationServer(
