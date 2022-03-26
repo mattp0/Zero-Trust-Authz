@@ -1,6 +1,6 @@
 import requests
 import json
-from config import db_api_url, base_permissions
+from config import db_api_url, base_permissions, domain
 import logging
 import time
 from mongomixin import Oauth2ClientMixin, Oauth2AuthorizationCodeMixin, Oauth2TokenMixin
@@ -8,30 +8,39 @@ from mock_info import client_info, meta, token_info
 
 def build_user_json(user):
     json_user = {
-        "uuid": f"{user['sub']}",
-        "sub": f"{user['sub']}",
+        "email": f"{user['email']}",
         "name": f"{user['name']}",
+        "hd": domain, 
         "permissions": base_permissions
     }
-    return json.dumps(json_user)
+    return json_user
 
-def create_json_user(user):
+def create_json_user(user) -> dict:
     create_user_endpoint = db_api_url+"/user/create"
     json_user = build_user_json(user)
-    response = requests.post(create_user_endpoint, json=json_user)
-    if response.status_code == 201:
-        return True
-    return False 
+    response = requests.post(create_user_endpoint, data=json.dumps(json_user))
+    if response.status_code == 200:
+        return response.content
+    return None
 
-def user_exists(user):
-    user_endpoint = db_api_url + "/user/" + str(user['sub'])
+def user_exists(user) -> dict:
+    user_endpoint = db_api_url + "/user/" + str(user['email'])
     response = requests.get(user_endpoint)
     if response.status_code == 200:
-        return True
+        return response.content
     elif response.status_code == 404:
-        return False
+        return None
     else:
-        print(response.status_code)
+        raise Exception("Unknown Error as occurred")
+
+def get_user_by_id(id) -> dict:
+    user_endpoint = db_api_url + "/user/id/" + id
+    response = requests.get(user_endpoint)
+    if response.status_code == 200:
+        return response.content
+    elif response.status_code == 404:
+        return None
+    else:
         raise Exception("Unknown Error as occurred")
 
 def create_authz_code(data):
@@ -58,24 +67,27 @@ def delete_authz_code(code):
 def query_client(client_id):
     client_endpoint = db_api_url + "/client/" + str(client_id)
     response = requests.get(client_endpoint)
-    print(response)
-    client = Oauth2ClientMixin(client_info, meta)
+    client = Oauth2ClientMixin(json.loads(response.content))
     return client
   
-def save_token(token_data, request):
+def save_token(token, request):
+    client_endpoint = db_api_url + "/token/create"
     if request.user:
         user_id = request.user.get_user_id()
     else:
         user_id = None
     client = request.client
-    #parse token into api call
+
     item ={
-        "client_id":client.client_id,
-        "user_id":user_id,
-        "token":token_data,
+        "client_id": client.client_id,
+        "user_id": user_id,
+        "issued_at": int(time.time()),
+        "expires_in": 300,
+        "access_token_revoked_at": 0,
+        **token
     }
-    token = (item)
-    print(token)
+    response = requests.post(client_endpoint, data=json.dumps(item))
+    print(response.status_code)
     #TODO add mongo API call to save token!
   
 
@@ -85,11 +97,9 @@ def create_query_token_func():
     token endpoints.
     """
     def query_token(token, token_type_hint):
-        print("inside qury token", token)
-        if token_type_hint == 'access_token':
-            return True # need to define a db api call to look at token by access
-        elif token_type_hint == 'refresh_token':
-            return True # need to define a db api call to look at token by refresh
+        client_endpoint = db_api_url + "/token/" + token
+        response = requests.get(client_endpoint)
+        return Oauth2TokenMixin(json.loads(response.content))
     return query_token
 
 
@@ -122,15 +132,18 @@ def create_bearer_token_validator():
     class _BearerTokenValidator(BearerTokenValidator):
         def authenticate_token(self, token_string):
             #search for token in db api call. returns the token
-            token = Oauth2TokenMixin()
-            print(token)
-            print(token_string)
-            return token
+            client_endpoint = db_api_url + "/token/" + token_string
+            response = requests.get(client_endpoint)
+            return Oauth2TokenMixin(json.loads(response.content))
 
         def request_invalid(self, request):
             return False
 
         def token_revoked(self, token):
-            return token.revoked
+            revoke_time = token.is_revoked()
+            if revoke_time != 0:
+                if revoke_time > int(time.time()):
+                    return True
+            return False
 
     return _BearerTokenValidator
