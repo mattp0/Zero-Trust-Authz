@@ -14,6 +14,7 @@ mongo_users = db['users']
 mongo_clients = db['clients']
 mongo_tokens = db['tokens']
 mongo_authcodes = db['authcodes']
+
 @app.post("/user/create", response_description="Add new user", response_model=UserModel)
 async def create_user(user: UserModel = Body(...)):
     user = jsonable_encoder(user)
@@ -26,9 +27,16 @@ async def list_users():
     users = await mongo_users.find().to_list(1000)
     return JSONResponse(status_code=status.HTTP_200_OK, content=users)
 
+@app.get("/user/id/{id}", response_description="Get a user", response_model=UserModel)
+async def get_user_by_id(id: str):
+    user = await mongo_users.find_one({"_id": id})
+    if not user:
+        return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="No user found")
+    return JSONResponse(status_code=status.HTTP_200_OK, content=user)
+
 @app.get("/user/{sub}", response_description="Get a user", response_model=UserModel)
 async def get_user(sub: str):
-    user = await mongo_users.find_one({"sub": sub})
+    user = await mongo_users.find_one({"email": sub})
     if not user:
         return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, content="No user found")
     return JSONResponse(status_code=status.HTTP_200_OK, content=user)
@@ -84,7 +92,7 @@ async def create_token(token: TokenModel = Body(...)):
 
 @app.get("/token/{token_str}", response_description="Get a token", response_model=TokenModel)
 async def get_token(token_str: str):
-    token = await mongo_tokens.find_one({"token_id": token_str})
+    token = await mongo_tokens.find_one({"access_token": token_str})
     if not token:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="No token found")
     return JSONResponse(status_code=status.HTTP_200_OK, content=token)
