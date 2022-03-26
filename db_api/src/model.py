@@ -134,6 +134,33 @@ class TokenModel(BaseModel):
             }
         }
 
+class UpdateTokenModel(BaseModel):
+    client_id: Optional[str] 
+    user_id: Optional[str] 
+    token_type: Optional[str] 
+    scope: Optional[str] 
+    access_token: Optional[str] 
+    expires_in: Optional[int] 
+    issued_at: Optional[int] 
+    access_token_revoked_at: Optional[int] 
+    
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        schema_extra = {
+            "example": {
+                "client_id": "1231232145",
+                "user_id": "1231232",
+                "token_type": "Bearer",
+                "access_token": 'swerasdfwewdasdf',
+                "scope": "openid profile email",
+                "issued_at": 12314,
+                "access_token_revoked_at": 123124,
+                "expires_in": 0,
+            }
+        }
+
 class AuthCodeObject(ObjectId):
     @classmethod
     def __get_validators__(cls):

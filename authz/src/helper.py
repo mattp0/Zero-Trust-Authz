@@ -4,7 +4,6 @@ from config import db_api_url, base_permissions, domain
 import logging
 import time
 from mongomixin import Oauth2ClientMixin, Oauth2AuthorizationCodeMixin, Oauth2TokenMixin
-from mock_info import client_info, meta, token_info
 
 def build_user_json(user):
     json_user = {
@@ -77,7 +76,6 @@ def save_token(token, request):
     else:
         user_id = None
     client = request.client
-
     item ={
         "client_id": client.client_id,
         "user_id": user_id,
@@ -87,16 +85,14 @@ def save_token(token, request):
         **token
     }
     response = requests.post(client_endpoint, data=json.dumps(item))
-    print(response.status_code)
-    #TODO add mongo API call to save token!
+    logging.INFO(response.status_code)
+    
   
-
-
 def create_query_token_func():
     """Create an ``query_token`` function for revocation, introspection
     token endpoints.
     """
-    def query_token(token, token_type_hint):
+    def query_token(token, _):
         client_endpoint = db_api_url + "/token/" + token
         response = requests.get(client_endpoint)
         return Oauth2TokenMixin(json.loads(response.content))
@@ -115,11 +111,9 @@ def create_revocation_endpoint():
 
         def revoke_token(self, token, request):
             now = int(time.time())
-            hint = request.form.get('token_type_hint')
             token.access_token_revoked_at = now
-            if hint != 'access_token':
-                token.refresh_token_revoked_at = now
-            #write token to db api
+            print("INSIDE REVOCATION", token)
+
 
     return _RevocationEndpoint
 
@@ -131,7 +125,6 @@ def create_bearer_token_validator():
 
     class _BearerTokenValidator(BearerTokenValidator):
         def authenticate_token(self, token_string):
-            #search for token in db api call. returns the token
             client_endpoint = db_api_url + "/token/" + token_string
             response = requests.get(client_endpoint)
             return Oauth2TokenMixin(json.loads(response.content))

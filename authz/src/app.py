@@ -56,22 +56,17 @@ def authorize():
     if request.query_string == b'':
         request.query_string = session['query_str']
     session['User'] = google.get(user_info_endpoint).json()  
-    user = user_exists(session['User'])
-    if user is not None:
-        user = User(json.loads(user))
+    authz_user = user_exists(session['User'])
+    if authz_user is not None:
+        user = User(json.loads(authz_user))
     else:
         user = User(json.loads(create_json_user(session['User'])))
     if request.method == 'GET':
         try:
-            grant = authorization.validate_consent_request(end_user=user)
+            _ = authorization.validate_consent_request(end_user=user)
         except OAuth2Error as error:
             return jsonify(dict(error.get_body()))
-        return render_template('authorize.html', user=user, grant=grant)
-    if request.form['confirm']:
-        grant_user = user
-    else:
-        grant_user = None
-    return authorization.create_authorization_response(grant_user=grant_user)
+    return authorization.create_authorization_response(grant_user=user)
 
 
 @app.route('/token/', methods=['POST'])

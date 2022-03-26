@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from typing import List
 import motor.motor_asyncio
 
-from model import UserModel, UpdateUserModel, ClientModel, AuthCodeModel, TokenModel
+from model import UpdateTokenModel, UserModel, UpdateUserModel, ClientModel, AuthCodeModel, TokenModel
 
 app = FastAPI()
 client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://root:example@authz-mongo:27017/?authSource=admin")
@@ -49,16 +49,13 @@ async def delete_user(user: UserModel = Body(...)):
     else:
         return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED)  
 
-@app.put("/user/update/{id}", response_model= UserModel, response_description="update a users info")
+@app.put("/user/update/{id}", response_description="update a users info")
 async def update_user(id: str, user : UpdateUserModel = Body(...)):
     user = {key: value for key, value in user.dict().items() if value is not None}
     if len(user) >= 1:
         update_result = await mongo_users.update_one({"_id": id}, {"$set": user})
         if update_result.modified_count == 1:
-            if (updated_user := await mongo_users.find_one({"_id": id})) is not None:
-                return JSONResponse(status_code=status.HTTP_202_ACCEPTED, content=updated_user)
-    if (existing_user := await mongo_users.find_one({"_id": id})) is not None:
-        return JSONResponse(status_code=status.HTTP_200_OK, content=existing_user)
+            return JSONResponse(status_code=status.HTTP_200_OK)
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
 
 @app.post("/client/create", response_description="Add new client", response_model=ClientModel)
@@ -96,6 +93,15 @@ async def get_token(token_str: str):
     if not token:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="No token found")
     return JSONResponse(status_code=status.HTTP_200_OK, content=token)
+
+@app.put("/token/update/{token_str}", response_description="update a tokens info")
+async def update_token(token_str: str, token : UpdateTokenModel = Body(...)):
+    token = {key: value for key, value in token.dict().items() if value is not None}
+    if len(token) >= 1:
+        update_result = await mongo_tokens.update_one({"token_id": token_str}, {"$set": token})
+        if update_result.modified_count == 1:
+            return JSONResponse(status_code=status.HTTP_200_OK)
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
 
 @app.post('/token/delete', response_description="delete a token", response_model=TokenModel)
 async def delete_token(token: TokenModel = Body(...)):

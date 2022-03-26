@@ -1,6 +1,4 @@
-db_api_url = "http://192.168.40.189:8070"
-base_permissions = ["test"]
-email_scope = "alaska.edu"
+db_api_url = "http://authz-dbapi"
 domain = "mperry.io"
 
 DUMMY_JWT_CONFIG = {
