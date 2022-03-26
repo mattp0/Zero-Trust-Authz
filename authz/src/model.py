@@ -1,10 +1,11 @@
 from typing import List
 class User():
     def __init__(self, init) -> None:
-        self.id = init['id']
+        self.id = init['_id']
         self.email: str = init['email']
         self.name: str = init['name']
-        self.permissions: str = init['hd']
+        self.hd: str = init['hd']
+        self.permissions: str = init['permissions']
 
     def get_user_id(self):
         return self.id
