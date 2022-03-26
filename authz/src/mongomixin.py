@@ -8,12 +8,12 @@ import json
 
 class Oauth2ClientMixin(ClientMixin):
     "client mixin definition"
-    def __init__(self, info : dict, metadata: dict):
-        self.client_id: str = info['client_id']
+    def __init__(self, info : dict):
+        self.client_id: str = info['_id']
         self.client_secret: str = info['client_secret']
         self.client_id_issued_at: int = info['client_id_issued_at']
         self.client_secret_expires_at: int = info['client_secret_expires_at']
-        self._client_metadata = metadata
+        self._client_metadata = info['client_metadata']
 
     #based on requiremnets for the client mixin from authlib
     @property
@@ -24,11 +24,16 @@ class Oauth2ClientMixin(ClientMixin):
             client_id_issued_at=self.client_id_issued_at,
             client_secret_expires_at=self.client_secret_expires_at,
             )
-    @cached_property
+    @property
     def client_metadata(self):
+        if 'client_metadata' in self.__dict__:
+            return self.__dict__['client_metadata']
         if self._client_metadata:
-            return json_loads(json_dumps(self._client_metadata))
-        return None
+            data = self._client_metadata.replace("'", "\"")
+            data = json_loads(data)
+            self.__dict__['client_metadata'] = data
+            return data
+        return {}
 
     def set_client_metadata(self, value):
         self._client_metadata = json_dumps(value)
@@ -131,7 +136,7 @@ class Oauth2ClientMixin(ClientMixin):
 
 class Oauth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     def __init__(self, info: dict):
-        self.code:str=info["code"]
+        self.code:str=info["_id"]
         self.client_id:str=info["client_id"]
         self.redirect_uri:str=info["redirect_uri"]
         self.response_type:str=info["response_type"]
@@ -140,7 +145,7 @@ class Oauth2AuthorizationCodeMixin(AuthorizationCodeMixin):
         self.auth_time:int=info["auth_time"]
 
     def is_expired(self):
-        return self.auth_time + 8000000 < time.time()
+        return self.auth_time + 300 < time.time()
 
     def get_redirect_uri(self):
         return self.redirect_uri
@@ -158,15 +163,15 @@ class Oauth2AuthorizationCodeMixin(AuthorizationCodeMixin):
         return self.code
 
 class Oauth2TokenMixin(TokenMixin):
-    def __int__(self, info: dict):
+    def __init__(self, info: dict):
+        self.id:str=info["_id"]
         self.client_id:str=info["client_id"]
+        self.user_id:str=info["user_id"]
         self.token_type:str=info["token_type"]
         self.access_token:str=info["access_token"]
-        self.refresh_token:str=info["refresh_token"]
         self.scope:str=info["scope"]
         self.issued_at:int=info["issued_at"]
         self.access_token_revoked_at:int=info["access_token_revoked_at"]
-        self.refresh_token_revoked_at:int=info["refresh_token_revoked_at"]
         self.expires_in:int=info["expires_in"]
 
     def check_client(self, client):
@@ -178,22 +183,15 @@ class Oauth2TokenMixin(TokenMixin):
     def get_expires_in(self):
         return self.expires_in
 
+    def get_expires_at(self):
+                return self.issued_at + self.expires_in
+
     def is_revoked(self):
-        return self.access_token_revoked_at or self.refresh_token_revoked_at
+        return self.access_token_revoked_at
 
     def is_expired(self):
         if not self.expires_in:
             return False
-    
-    def get_expires_at(self):
-        return self.issued_at + self.expires_in
 
-
-
-def main():
-    mix = Oauth2ClientMixin(client_info, meta)
-    print((mix.get_client_id()))
-    return 1
-
-if __name__ == "__main__":
-    main()
+        expires_at = self.issued_at + self.expires_in
+        return expires_at < time.time()
