@@ -1,11 +1,9 @@
-fastapi
-uvicorn
 starlette
 itsdangerous
-authlib
+authlib==0.13
 httpx
 requests
-gunicorn
+gunicorn==20.1.0
 flask
-python-dotenv
-Flask-Dance
+python-dotenv==0.19.2
+Flask-Dance==5.1.0
