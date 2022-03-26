@@ -29,3 +29,9 @@ services:
     expose:
       - "80"
     restart: unless-stopped
+  client:
+    container_name: client_creator
+    build:
+      context: ./
+      dockerfile: ./client_helper/Dockerfile
+    restart: unless-stopped
