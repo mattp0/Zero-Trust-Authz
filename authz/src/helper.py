@@ -85,7 +85,6 @@ def save_token(token, request):
         **token
     }
     response = requests.post(client_endpoint, data=json.dumps(item))
-    logging.INFO(response.status_code)
     
   
 def create_query_token_func():
