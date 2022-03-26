@@ -5,11 +5,12 @@ import os
 from flask_dance.contrib.google import make_google_blueprint, google
 from authlib.oauth2 import OAuth2Error
 from mongomixin import Oauth2ClientMixin 
-from config import email_scope
-from authlib.integrations.flask_oauth2 import current_token
 from oauth import authorization, require_oauth, generate_user_info, config_oauth
 from model import User
+from helper import user_exists, create_json_user, get_user_by_id
 from mock_info import fake_user
+import json
+from authlib.integrations.flask_oauth2 import current_token
 
 load_dotenv()
 app = Flask(__name__)
@@ -20,7 +21,6 @@ app.secret_key = secrets.token_urlsafe(32)
 app.config.from_pyfile("settings.py")
 config_oauth(app)
 #need to do something else
-called_request = None
 os.environ['OAUTHLIB_INSECURE_TRANSPORT']='1'
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE']='1'
 
@@ -28,46 +28,39 @@ blueprint = make_google_blueprint(
     client_id=client_id,
     client_secret=client_secret,
     reprompt_consent=True,
-    scope=["profile", "email", "openid"]
+    scope=["profile", "email", "openid"],
+    redirect_url="/authorize"
     )
 
 app.register_blueprint(blueprint, url_prefix="/login")
 
-@app.route('/')
-def home():
-    user_info_endpoint = '/oauth2/v2/userinfo'
-    if google.authorized:
-        session['User'] = google.get(user_info_endpoint).json()
-        return render_template('index.j2',
-                            google_data=session['User'],
-                            fetch_url=google.base_url + user_info_endpoint
-                        )
-    return redirect(url_for("login"))
-
 @app.route('/login')
 def login():
     return redirect(url_for('google.login'))
-
 
 @app.route('/logout') 
 def logout():
     session.pop('User', None)
 
 @app.route('/userinfo')
-# @require_oauth('profile')
+@require_oauth('profile')
 def permissions():
-    user = User(fake_user)
-    return jsonify(generate_user_info(user, "openid profile email"))
+    return jsonify(generate_user_info(current_token.user_id, current_token.scope))
 
 @app.route('/authorize', methods=['GET', 'POST'])
 def authorize():
-    print(request.query_string)
     user_info_endpoint = '/oauth2/v2/userinfo'
-    if google.authorized:
-        session['User'] = google.get(user_info_endpoint).json()
-    if "User" not in session:
+    if not google.authorized:
+        session['query_str'] = request.query_string
         return redirect(url_for("google.login", next=request.url))
-    user = User(session['User'])
+    if request.query_string == b'':
+        request.query_string = session['query_str']
+    session['User'] = google.get(user_info_endpoint).json()  
+    user = user_exists(session['User'])
+    if user is not None:
+        user = User(json.loads(user))
+    else:
+        user = User(json.loads(create_json_user(session['User'])))
     if request.method == 'GET':
         try:
             grant = authorization.validate_consent_request(end_user=user)
