@@ -15,7 +15,8 @@ from helper import (
     create_authz_code,
     get_authz_code,
     delete_authz_code,
-    get_user_by_id
+    get_user_by_id,
+    create_revocation_endpoint
 
 )
 from model import User
@@ -90,7 +91,8 @@ def config_oauth(app):
         OpenIDCode(require_nonce=False),
     ])
 
-
+    revocation_cls = create_revocation_endpoint()
+    authorization.register_endpoint(revocation_cls)
     # protect resource
     bearer_cls = create_bearer_token_validator()
     require_oauth.register_token_validator(bearer_cls())
