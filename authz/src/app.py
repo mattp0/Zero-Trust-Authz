@@ -52,7 +52,7 @@ def authorize():
     if not google.authorized:
         session['query_str'] = request.query_string
         return redirect(url_for("google.login", next=request.url))
-    if request.query_string == b'':
+    elif request.query_string == b'':
         request.query_string = session['query_str']
     session['User'] = google.get(user_info_endpoint).json()  
     authz_user = user_exists(session['User'])
