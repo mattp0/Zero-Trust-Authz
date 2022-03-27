@@ -10,6 +10,9 @@ class User():
     def get_user_id(self):
         return self.id
 
+    def get_permissions(self):
+        return self.permissions
+
     def get_email(self):
         return self.email
     
