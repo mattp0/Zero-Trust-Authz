@@ -40,6 +40,7 @@ def login():
 @app.route('/logout') 
 def logout():
     session.pop('User', None)
+    return 200
 
 @app.route('/userinfo')
 @require_oauth('profile')
