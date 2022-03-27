@@ -94,18 +94,18 @@ async def get_token(token_str: str):
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content="No token found")
     return JSONResponse(status_code=status.HTTP_200_OK, content=token)
 
-@app.put("/token/update/{token_str}", response_description="update a tokens info")
-async def update_token(token_str: str, token : UpdateTokenModel = Body(...)):
+@app.put("/token/update/{id}", response_description="update a tokens info")
+async def update_token(id: str, token : UpdateTokenModel = Body(...)):
     token = {key: value for key, value in token.dict().items() if value is not None}
     if len(token) >= 1:
-        update_result = await mongo_tokens.update_one({"token_id": token_str}, {"$set": token})
+        update_result = await mongo_tokens.update_one({"_id": id}, {"$set": token})
         if update_result.modified_count == 1:
             return JSONResponse(status_code=status.HTTP_200_OK)
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND)
 
 @app.post('/token/delete', response_description="delete a token", response_model=TokenModel)
 async def delete_token(token: TokenModel = Body(...)):
-    res = await mongo_tokens.delete_one({"token_id": token["token_id"]})
+    res = await mongo_tokens.delete_one({"_id": token["_id"]})
     if res.deleted_count >= 1:
         return JSONResponse(status_code=status.HTTP_200_OK, content={"success": "true"})
     else:
