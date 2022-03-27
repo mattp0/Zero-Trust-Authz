@@ -2,6 +2,7 @@ import requests
 import json
 from config import db_api_url, base_permissions, domain
 import logging
+from logging import INFO
 import time
 from mongomixin import Oauth2ClientMixin, Oauth2TokenMixin
 
@@ -111,7 +112,7 @@ def create_revocation_endpoint():
         def revoke_token(self, token, request):
             now = int(time.time())
             token.access_token_revoked_at = now
-            print("INSIDE REVOCATION", token)
+            logging.INFO(f"INSIDE REVOCATION: {token}")
 
 
     return _RevocationEndpoint
