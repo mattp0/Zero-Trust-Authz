@@ -110,9 +110,11 @@ def create_revocation_endpoint():
             return query_token(token, token_type_hint)
 
         def revoke_token(self, token, request):
+            client_endpoint = db_api_url + "/token/update/" + token.get_id()
             now = int(time.time())
             token.access_token_revoked_at = now
-            logging.INFO(f"INSIDE REVOCATION: {token}")
+            response = requests.post(client_endpoint, data=json.dumps(token))
+    
 
 
     return _RevocationEndpoint
