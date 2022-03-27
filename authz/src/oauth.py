@@ -23,7 +23,7 @@ from model import User
 import json
 import secrets
 import time
-from config import DUMMY_JWT_CONFIG
+from config import DUMMY_JWT_CONFIG, allowed_permission
 
 def create_authorization_code(client, grant_user, request):
     data = {
@@ -64,7 +64,10 @@ def exists_nonce(nonce, req):
 def generate_user_info(user, scope):
     token_user = get_user_by_id(user)
     token_user = User(json.loads(token_user))
-    return UserInfo(name=token_user.get_name(), email=token_user.get_email(), team="bad")
+    permissions = token_user.get_permissions()
+    if allowed_permission not in permissions:
+        return UserInfo(name=token_user.get_name(), email="bad@bad.com", team="bad")
+    return UserInfo(name=token_user.get_name(), email=token_user.get_email(), team=allowed_permission)
 
 class OpenIDCode(_OpenIDCode):
     def exists_nonce(self, nonce, request):
