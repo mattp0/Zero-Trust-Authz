@@ -67,6 +67,9 @@ def authorize():
             return jsonify(dict(error.get_body()))
     return authorization.create_authorization_response(grant_user=user)
 
+@app.route('/revoke', methods=['POST'])
+def revoke_token():
+    return authorization.create_endpoint_response('revocation')
 
 @app.route('/token/', methods=['POST'])
 def token():
