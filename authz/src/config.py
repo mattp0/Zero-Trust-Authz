@@ -1,6 +1,7 @@
 db_api_url = "http://authz-dbapi"
 base_permissions = ["test"]
 domain = "mperry.io"
+allowed_permission = "web"
 
 DUMMY_JWT_CONFIG = {
     'key': 'secret-key',
