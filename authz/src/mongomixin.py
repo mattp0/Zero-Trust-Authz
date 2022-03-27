@@ -171,6 +171,9 @@ class Oauth2TokenMixin(TokenMixin):
         self.access_token_revoked_at:int=info["access_token_revoked_at"]
         self.expires_in:int=info["expires_in"]
 
+    def get_id(self):
+        return self.id
+
     def check_client(self, client):
         return self.client_id == client.get_client_id()
 
