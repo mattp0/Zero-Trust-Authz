@@ -34,4 +34,6 @@ services:
     build:
       context: ./
       dockerfile: ./client_helper/Dockerfile
+    volumes:
+      - ./client_helper/src/:.
     restart: unless-stopped
