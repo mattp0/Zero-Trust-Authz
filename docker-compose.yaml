@@ -30,7 +30,7 @@ services:
       - "80"
     restart: unless-stopped
   client:
-    container_name: client_creator
+    container_name: authz-client
     build:
       context: ./
       dockerfile: ./client_helper/Dockerfile
