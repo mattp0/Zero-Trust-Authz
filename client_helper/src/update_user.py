@@ -10,7 +10,6 @@ new_perms = {
 
 def update_user(user, new_user):
     print(f"testing update user, with info:{user}, to {new_user}")
-    user = json.loads(str(user, "utf-8"))
     update_endpoint = db_api_url + "/user/update/" + user["_id"]
     response = requests.put(update_endpoint, data=json.dumps(new_user))
     if response.status_code == 200:
