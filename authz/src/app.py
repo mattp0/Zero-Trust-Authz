@@ -1,5 +1,5 @@
 import secrets
-from flask import Flask, redirect, session, url_for, request, jsonify
+from flask import Flask, redirect, session, url_for, request, jsonify, render_template
 from dotenv import load_dotenv
 import os
 from flask_dance.contrib.google import make_google_blueprint, google
@@ -9,7 +9,8 @@ from model import User
 from helper import user_exists, create_json_user
 import json
 from authlib.integrations.flask_oauth2 import current_token
-
+import time
+from config import oauth_redirect_url
 load_dotenv()
 app = Flask(__name__)
 client_id = os.getenv('GOOGLE_CLIENT_ID')
@@ -28,7 +29,7 @@ blueprint = make_google_blueprint(
     client_secret=client_secret,
     reprompt_consent=True,
     scope=["profile", "email", "openid"],
-    redirect_url="http://auth.mperry.io/authorize"
+    redirect_url=oauth_redirect_url
     )
 
 app.register_blueprint(blueprint, url_prefix="/login")
@@ -47,7 +48,7 @@ def logout():
     )
     session.pop('User', None)
     del blueprint.token
-    return redirect(url_for('login'))
+    return render_template('loggedout.html')
 
 @app.route('/userinfo')
 @require_oauth('profile')
@@ -62,7 +63,10 @@ def authorize():
         return redirect(url_for("google.login", next=request.url))
     elif request.query_string == b'':
         request.query_string = session['query_str']
-    session['User'] = google.get(user_info_endpoint).json()  
+    token_expire_time = blueprint.token['expires_at']
+    if int(time.time()) >= token_expire_time:
+        return redirect(url_for("logout"))
+    session['User'] = google.get(user_info_endpoint).json()
     authz_user = user_exists(session['User'])
     if authz_user is not None:
         user = User(json.loads(authz_user))
