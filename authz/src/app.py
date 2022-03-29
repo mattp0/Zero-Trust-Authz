@@ -10,7 +10,8 @@ from helper import user_exists, create_json_user
 import json
 from authlib.integrations.flask_oauth2 import current_token
 import time
-from config import oauth_redirect_url
+from config import custom_redirect_url
+
 load_dotenv()
 app = Flask(__name__)
 client_id = os.getenv('GOOGLE_CLIENT_ID')
@@ -29,7 +30,7 @@ blueprint = make_google_blueprint(
     client_secret=client_secret,
     reprompt_consent=True,
     scope=["profile", "email", "openid"],
-    redirect_url=oauth_redirect_url
+    redirect_url=custom_redirect_url
     )
 
 app.register_blueprint(blueprint, url_prefix="/login")
