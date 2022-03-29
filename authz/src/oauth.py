@@ -67,8 +67,8 @@ def generate_user_info(user, scope):
     permissions = token_user.get_permissions()
     if allowed_permission not in permissions:
         return UserInfo(name=token_user.get_name(), email="bad@bad.com", team="bad")
-    id_email = token_user.get_user_id() + "@mperry.io"
-    return UserInfo(name=token_user.get_name(), email=id_email, team=token_user.get_permissions)
+    id_email = str(token_user.get_user_id()) + "@mperry.io"
+    return UserInfo(name=token_user.get_name(), email=id_email, team=token_user.get_permissions())
 
 class OpenIDCode(_OpenIDCode):
     def exists_nonce(self, nonce, request):
